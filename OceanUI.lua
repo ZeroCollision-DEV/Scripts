@@ -1756,6 +1756,3 @@ othersettings:addToggle({text = "Show Keybinds",flag = "show keybinds"})
 configsettings:addButton({text = "Copy Game Invite"})
 configsettings:addButton({text = "Rejoin Server"})
 configsettings:addButton({text = "Server Hop"})
-
-return library
-end
