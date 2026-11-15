@@ -1,57 +1,52 @@
-local Players          = game:GetService("Players")
-local RunService       = game:GetService("RunService")
-local UIS              = game:GetService("UserInputService")
-local VIM              = game:GetService("VirtualInputManager")
-local HttpService      = game:GetService("HttpService")
-local ReplicatedStorage= game:GetService("ReplicatedStorage")
-local Workspace        = game:GetService("Workspace")
-local lp               = Players.LocalPlayer
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local VIM = game:GetService("VirtualInputManager")
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local lp = Players.LocalPlayer
 
-if getgenv then
-    local g = getgenv()
-    if g.__BoxToggles then pcall(g.__BoxToggles); g.__BoxToggles = nil end
-    if g.__BoxHub     then pcall(g.__BoxHub);     g.__BoxHub     = nil end
+if getgenv and getgenv().__Kairo then
+    pcall(getgenv().__Kairo)
+    getgenv().__Kairo = nil
 end
 
-local CONFIG_FILE = "BoxHub_config.json"
-
 local cfg = {
+    autoFight = false, style = "Smart", pauseWhenUnlocked = true, fightOutside = false, outsideRange = 40,
+    punchRange = 3.8, comboPause = 0.6, speedScale = 1.0, jitter = 30, antiRepeat = 0.55, upperVsGuard = 2.5, heavyWhenTired = 0.4,
+    staminaFloor = 24, resumeAt = 58, finisherReserve = 12, maxIdle = 3.0,
+    dropGuardToPunch = false, punchWhileGuard = true,
+    finisherOn = true, finisherStam = 14, finisherHead = 22, finisherBoost = 2.2, finisherSpeed = 0.8,
 
-    autoFight = false, style = "Smart", pauseWhenUnlocked = true,
-
-    punchRange = 3.8, comboPause = 0.6, speedScale = 1.0, jitter = 30,
-    staminaFloor = 24, resumeAt = 58, dropGuardToPunch = false, punchWhileGuard = true,
-    finisherReserve = 12, maxIdle = 3.0, finisherOn = true, finisherStam = 14, finisherHead = 22, finisherBoost = 2.2, finisherSpeed = 0.8,
-    antiRepeat = 0.55, upperVsGuard = 2.5, heavyWhenTired = 0.4,
-
-    defOn = true, defMode = "Adaptive", reactMs = 115, reactJitter = 35, blockChance = 94,
-    holdPad = 140, guardIdle = true, respondRange = 7.0, slipDir = "Away", slipTime = 280,
+    defOn = true, defMode = "Adaptive", reactMs = 115, reactJitter = 35, blockChance = 94, holdPad = 140, guardIdle = true,
+    respondRange = 7.0, slipDir = "Away", slipTime = 280,
     counterOn = true, counterChance = 70, counterDelay = 110, counterWindow = 1.0,
 
-    moveOn = true, idealMin = 2.7, idealMax = 3.5, strafeOn = true, strafeMin = 0.9, strafeMax = 2.4,
-    retreatLow = true, faceOn = true, faceSpeed = 10, faceDeadzone = 3, faceYOffset = 0.2,
+    moveOn = true, idealMin = 2.7, idealMax = 3.5, strafeOn = true, strafeMin = 0.9, strafeMax = 2.4, retreatLow = true,
+    faceOn = true, faceSpeed = 10, faceDeadzone = 3, faceYOffset = 0.2, faceMaxSpeed = 380,
 
     humanOn = true, humanFocus = 0.5, humanPauseChance = 0.12, maxCps = 4.2, holdMin = 45, holdMax = 105,
-    aimSway = 0.7, faceMaxSpeed = 380, predictOn = true, safetyMargin = 0.12, breathScale = 0.8, strafeLearn = true,
+    aimSway = 0.7, predictOn = true, safetyMargin = 0.12, breathScale = 0.8,
 
-    espOn = true, espBars = true, espHighlight = true, espGuardInfo = true, espDistance = true,
-    espColorStam = true, rangeRing = false, tracer = false, incomingWarn = true, hudOn = true,
-    espScale = 1.0,
+    learnOn = true, learnStrength = 0.65, explore = 14, defExplore = 12, aimZone = "Adaptive", chestOffset = -1.0,
+    resetLearnPerFight = true, hitMove = true, hitMoveTime = 0.26, interruptChance = 10,
+    windowPunch = true, rangeLearn = true, phaseLearn = true, lenLearn = true, counterLearn = true, strafeLearn = true,
 
-    noFatigue = false, infStamina = false, autoSpar = false, sparDelay = 4,
+    espOn = true, espBox = true, boxStyle = "Corners", espBars = true, espCard = true, espGuardInfo = true, espDistance = true,
+    espValues = true, espHeadDot = true, espGhost = true, espHighlight = true, espPulse = true, espOffscreen = true,
+    espColorStam = true, espColor = Color3.fromRGB(70, 220, 110), espScale = 1.0,
+    rangeRing = false, tracer = false, incomingWarn = true, hudOn = true,
+    espPlayers = true, espPlayerMode = "Closest N", espPlayerCount = 8, espPlayerRange = 300, espPlayerBars = true, espPlayerDist = true,
 
-    getUpOn = true, getUpDelay = 80,
-    windowPunch = true, rangeLearn = true, phaseLearn = true, lenLearn = true, counterLearn = true,
-    espCard = true, espBox = true, boxStyle = "Corners", espGhost = true, espHeadDot = true, espValues = true,
     fxOn = true, fxSparks = true, fxRings = true, fxNumbers = true, fxCombo = true, fxFlash = true, fxAura = true, fxAuraAlways = false,
-    fxAuraStrength = 0.6, fxVignette = true, fxGlove = true, fxEmbers = true, fxShake = 0, fxQuality = "Medium", fxColor = Color3.fromRGB(154, 123, 255), espOffscreen = true, espPulse = true,
+    fxAuraStrength = 0.6, fxVignette = true, fxGlove = true, fxEmbers = true, fxShake = 0, fxQuality = "Medium",
+    fxColor = Color3.fromRGB(154, 123, 255),
+
     gloveOn = false, gloveChoice = "", trunksOn = false, trunksChoice = "", skinCycle = false, cycleDelay = 4, skinRandomFight = false,
 
-    learnOn = true, learnStrength = 0.65, explore = 14, aimZone = "Adaptive", chestOffset = -1.0, resetLearnPerFight = true,
-    defExplore = 12, hitMove = true, hitMoveTime = 0.26, interruptChance = 10,
-    fightOutside = false, outsideRange = 40, espPlayers = true, espPlayerMode = "Closest N", espPlayerCount = 8, espPlayerRange = 300, espPlayerBars = true, espPlayerDist = true,
-    antiAfk = false, fovOn = false, fov = 100, espColor = Color3.fromRGB(70, 220, 110),
-    logPunches = false, notifyFight = true, notifyGassed = true,
+    noFatigue = false, infStamina = false, autoSpar = false, sparDelay = 4, getUpOn = true, getUpDelay = 80,
+    antiAfk = false, fovOn = false, fov = 100, logPunches = false, notifyFight = true, notifyGassed = true,
 }
 
 local COMBOS = {
@@ -78,7 +73,7 @@ for k, v in pairs(cfg) do DEFAULTS[k] = v end
 cfg.autoFight = false
 local UIState = { open = false }
 local FXS = { flashUntil = 0, punch = nil }
-if getgenv then getgenv().__BoxCfg = cfg end
+if getgenv then getgenv().__KairoCfg = cfg end
 
 local conns, cleanups = {}, {}
 local function track(c) conns[#conns + 1] = c; return c end
@@ -92,9 +87,9 @@ local function mk(class, props, parent)
     return i
 end
 
-local gui = mk("ScreenGui", { Name = "BoxHub", ResetOnSpawn = false, DisplayOrder = 999, IgnoreGuiInset = true,
+local gui = mk("ScreenGui", { Name = "Kairo", ResetOnSpawn = false, DisplayOrder = 999, IgnoreGuiInset = true,
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling }, container)
-local world = mk("Folder", { Name = "BoxHubWorld" }, container)
+local world = mk("Folder", { Name = "KairoWorld" }, container)
 onCleanup(function() gui:Destroy(); world:Destroy() end)
 
 local KB
@@ -380,12 +375,6 @@ end
 local function recordPunch(pend, class, kind)
     if FXS.punch then FXS.punch(class) end
     L.tot.n += 1; L.tot[class] += 1
-    if getgenv and pend and getgenv().__KairoTelemetry then
-        local g = getgenv()
-        g.__KT = g.__KT or {}
-        g.__KT[#g.__KT + 1] = { class = class, kind = kind, act = pend.act, zone = pend.zone, phase = pend.phase, busy = pend.busy, dist = pend.dist, idx = pend.idx, combo = pend.key, since = pend.since }
-        if #g.__KT > 600 then table.remove(g.__KT, 1) end
-    end
     if kind then
         L.kind[kind] = L.kind[kind] or { n = 0, hit = 0 }
         L.kind[kind].n += 1
@@ -666,11 +655,6 @@ local function settleDefence(now)
                 s = 1
             end
             L.dtot.n += 1; L.dtot[tag] += 1
-            if getgenv and getgenv().__KairoTelemetry then
-                local g = getgenv()
-                g.__KM = g.__KM or {}
-                g.__KM[#g.__KM + 1] = { mode = p.mode, kind = p.kind, tag = tag, lost = lost, eta = p.eta, up = p.up }
-            end
             if tag == "hit" then
                 local d = L.dtot
                 d.hitUp = (d.hitUp or 0) + (p.up and 1 or 0)
@@ -781,12 +765,6 @@ local function botStep(dt)
     settleDefence(now)
     local hpNow = myHP()
     if Bot.hpPrev and hpNow < Bot.hpPrev - 1 then Bot.dmgAcc = Bot.dmgAcc + (Bot.hpPrev - hpNow) end
-    if Bot.hpPrev and hpNow < Bot.hpPrev - 3 and getgenv and getgenv().__KairoTelemetry then
-        local g = getgenv()
-        g.__KD = g.__KD or {}
-        g.__KD[#g.__KD + 1] = { dmg = Bot.hpPrev - hpNow, sinceStart = now - Atk.t0, kind = Atk.kind, hand = Atk.hand, eta = Atk.eta, guardUp = held[bindOf("Guard", "F")] == true,
-            punching = Bot.combo ~= nil, slip = Bot.slipUntil > now, dist = E.dist, busy = Atk.untilT > now, sinceEnd = now - (Atk.endedAt or -9) }
-    end
     Bot.hpPrev = hpNow
     if E.model ~= Bot.lastModel then
         Bot.lastModel = E.model
@@ -916,8 +894,8 @@ local function botStep(dt)
 end
 track(RunService.Heartbeat:Connect(function(dt) local ok, e = pcall(botStep, dt); if not ok then Bot.state = "err"; Bot.err = tostring(e) end end))
 
-pcall(function() RunService:UnbindFromRenderStep("BoxHubFace") end)
-RunService:BindToRenderStep("BoxHubFace", Enum.RenderPriority.Camera.Value + 2, function(dt)
+pcall(function() RunService:UnbindFromRenderStep("KairoFace") end)
+RunService:BindToRenderStep("KairoFace", Enum.RenderPriority.Camera.Value + 2, function(dt)
     if not (cfg.autoFight and cfg.faceOn and fighting()) then return end
     if UIS.MouseBehavior ~= Enum.MouseBehavior.LockCenter then return end
     local cam = Workspace.CurrentCamera
@@ -933,7 +911,7 @@ RunService:BindToRenderStep("BoxHubFace", Enum.RenderPriority.Camera.Value + 2, 
     if cfg.humanOn then a = math.min(a, (cfg.faceMaxSpeed * dt) / math.max(ang, 0.01)) end
     cam.CFrame = cam.CFrame:Lerp(want, a)
 end)
-onCleanup(function() pcall(function() RunService:UnbindFromRenderStep("BoxHubFace") end) end)
+onCleanup(function() pcall(function() RunService:UnbindFromRenderStep("KairoFace") end) end)
 
 local function learnSummary()
     local t = L.tot
@@ -1995,7 +1973,7 @@ local window = Rayfield:CreateWindow({
     name = "Kairo.cc",
     subtitle = "First Person Boxing  |  v2.7",
     sidebarLayout = true,
-    configuration = { autoSave = true, autoLoad = true, fileName = "KairoCC_Boxing" },
+    configuration = { autoSave = true, autoLoad = true, fileName = "Kairo" },
 })
 pcall(function() window.settings.usageAnalytics = false end)
 pcall(function() window.settings.toggleKeybind = Enum.KeyCode.RightShift; window:SaveSettings() end)
@@ -2534,13 +2512,19 @@ hotkey("Panic (stop bot)", Enum.KeyCode.Delete, function()
     cfg.autoFight = false; releaseAll(); notify("Panic", "Auto Fight stopped, keys released.")
 end)
 tMisc:CreateSection({ name = "Config" })
+local CONFIG_DIR = "Kairo"
 local cfgName = "my_config"
-local function cfgPath(n) return "Kairo/" .. n .. ".json" end
+local function cfgPath(n) return CONFIG_DIR .. "/" .. n .. ".json" end
+local function serializable(k, v)
+    return k ~= "autoFight" and (type(v) == "number" or type(v) == "string" or type(v) == "boolean")
+end
 local function exportCfg(n)
     if not (writefile and makefolder) then return false end
-    pcall(makefolder, "Kairo")
+    pcall(makefolder, CONFIG_DIR)
     local out = {}
-    for k, v in pairs(cfg) do if k ~= "autoFight" and (type(v) == "number" or type(v) == "string" or type(v) == "boolean") then out[k] = v end end
+    for k, v in pairs(cfg) do
+        if serializable(k, v) then out[k] = v end
+    end
     return pcall(writefile, cfgPath(n), HttpService:JSONEncode(out))
 end
 local function importCfg(n)
@@ -2550,21 +2534,25 @@ local function importCfg(n)
     for k, v in pairs(data) do if k ~= "autoFight" and cfg[k] ~= nil and type(v) == type(cfg[k]) then setVal(k, v) end end
     return true
 end
-tMisc:CreateInput({ name = "Config file name", placeholder = "my_config", value = cfgName, callback = function(v) cfgName = (tostring(v):gsub("[^%w_%-]", "")) ~= "" and (tostring(v):gsub("[^%w_%-]", "")) or "my_config" end })
+tMisc:CreateInput({ name = "Config file name", placeholder = "my_config", value = cfgName, callback = function(v)
+    local clean = tostring(v):gsub("[^%w_%-]", "")
+    cfgName = clean ~= "" and clean or "my_config"
+end })
 local cfgRow = tMisc:CreateGroup()
 cfgRow:CreateButton({ name = "Export to file", callback = function() local ok = exportCfg(cfgName); notify(ok and "Exported" or "Export failed", ok and ("Saved as " .. cfgPath(cfgName)) or "Your executor has no file access.") end })
 cfgRow:CreateButton({ name = "Import from file", callback = function() local ok = importCfg(cfgName); notify(ok and "Imported" or "Import failed", ok and cfgName or ("No file " .. cfgPath(cfgName))) end })
 
 task.spawn(function()
     if not (writefile and isfile and makefolder) then return end
-    pcall(makefolder, "Kairo")
+    pcall(makefolder, CONFIG_DIR)
     for _, name in ipairs(PRESET_NAMES) do
-        local file = "Kairo/" .. (name:gsub("[^%w]+", "_")) .. ".json"
+        local file = cfgPath(name:gsub("[^%w]+", "_"))
         if not isfile(file) then
             local out = {}
             for k, v in pairs(DEFAULTS) do
-                local nv = PRESETS[name][k] ~= nil and PRESETS[name][k] or v
-                if k ~= "autoFight" and (type(nv) == "number" or type(nv) == "string" or type(nv) == "boolean") then out[k] = nv end
+                local value = PRESETS[name][k]
+                if value == nil then value = v end
+                if serializable(k, value) then out[k] = value end
             end
             pcall(writefile, file, HttpService:JSONEncode(out))
         end
@@ -2573,7 +2561,7 @@ end)
 tMisc:CreateText({ name = "Saving", text = "Every setting autosaves and reloads next time. Named configs live in the settings page (gear icon, top right)." })
 tMisc:CreateButton({ name = "Save now", callback = function()
     local ok = pcall(function() window:Save() end)
-    notify(ok and "Saved" or "Autosave is on", ok and "Configuration written." or "Your settings save automatically.")
+    notify(ok and "Saved" or "Autosave is on", ok and "Configuration saved." or "Your settings save automatically.")
 end })
 tMisc:CreateButton({ name = "Reset every setting to default", callback = function()
     for key, el in pairs(ctl) do
@@ -2581,7 +2569,7 @@ tMisc:CreateButton({ name = "Reset every setting to default", callback = functio
     end
     notify("Reset", "All settings are back to their defaults.")
 end })
-tMisc:CreateButton({ name = "Unload Kairo.cc", callback = function() if getgenv and getgenv().__BoxHub then getgenv().__BoxHub() end end })
+tMisc:CreateButton({ name = "Unload Kairo.cc", callback = function() if getgenv and getgenv().__Kairo then getgenv().__Kairo() end end })
 
 pcall(function()
     local VU = game:GetService("VirtualUser")
@@ -2682,7 +2670,7 @@ notify("Kairo.cc v2.7", "Loaded. Press RightShift to open the menu.")
 applyNoFatigue(); applyInfStamina()
 
 if getgenv then
-    getgenv().__BoxHub = function()
+    getgenv().__Kairo = function()
         cfg.autoFight = false
         for _, c in ipairs(conns) do pcall(function() c:Disconnect() end) end
         for i = #cleanups, 1, -1 do pcall(cleanups[i]) end
