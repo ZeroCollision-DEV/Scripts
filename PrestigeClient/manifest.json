@@ -1,0 +1,69 @@
+{
+  "version": "2.0",
+  "clientUrl": "https://github.com/ZeroCollision-DEV/Scripts/releases/download/prestige-client-v2.0/PrestigeClient.obfuscated.lua",
+  "changelog": {
+    "client": [
+      {
+        "tags": ["CLIENT", "NEW FEATURES"],
+        "date": "2026-11-18",
+        "title": "Public configs, config sharing and custom themes",
+        "summary": "Share setups with the community and make the menu yours.",
+        "items": [
+          "Public configs tab pulls shared setups straight from our GitHub",
+          "Pulled configs are temporary and removed on every relaunch",
+          "Import / Export your whole setup as JSON through the clipboard",
+          "Custom theme editor with accent and background colour pickers"
+        ]
+      },
+      {
+        "tags": ["CLIENT", "IMPROVEMENTS"],
+        "date": "2026-11-18",
+        "title": "Cleanup and a lighter Name Hider",
+        "summary": "Fewer duplicates and less work per frame.",
+        "items": [
+          "Duplicate Aspect Ratio and the old Crosshair were removed (49 modules)",
+          "Name Hider now reacts to text changes instead of scanning the whole UI",
+          "Slider values loaded from configs are clamped to their allowed range"
+        ]
+      },
+      {
+        "tags": ["CLIENT", "FIXES"],
+        "date": "2026-11-16",
+        "title": "Friends protection and menu fixes",
+        "summary": "Friends are safe from more of your own attacks.",
+        "items": [
+          "Triggerbot no longer attacks friends",
+          "A universal attack guard skips friends on every attack press",
+          "Back button rebuilt as a fixed-size pill",
+          "Performance pass on shared target lookups"
+        ]
+      },
+      {
+        "tags": ["CLIENT", "MAJOR UPDATE"],
+        "date": "2026-11-14",
+        "title": "Prestige Client 2.0",
+        "summary": "The first public build of the Roblox edition.",
+        "items": [
+          "Hit Sound dropdown with 25 sounds that replace the game's own",
+          "Icons and sounds load from GitHub instead of being embedded",
+          "Combat, Mace, Misc, Movement, Spear and Visual module tabs",
+          "25 built-in themes"
+        ]
+      }
+    ],
+    "loader": [
+      {
+        "tags": ["LAUNCHER", "NEW FEATURES"],
+        "date": "2026-11-18",
+        "title": "Prestige Launcher",
+        "summary": "Boot to the launcher, then inject when you are ready.",
+        "items": [
+          "Launch, Changelog and Account pages",
+          "Release notes and the client link are fetched from GitHub",
+          "Environment checks and a live injection log",
+          "Falls back to bundled notes when GitHub is unreachable"
+        ]
+      }
+    ]
+  }
+}
